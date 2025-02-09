@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DeepSeek-R1 8B</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>DeepSeek-R1 8B</h1>
+        <select class="model-selector" id="model-selector">
+            <option value="deepseek-r1:8b">DeepSeek-R1 8B</option>
+        </select>
+    </header>
+    
+    <div id="chat-container"></div>
+    
+    <div id="input-container">
+        <div class="input-wrapper">
+            <textarea 
+                id="message-input" 
+                placeholder="Type your message... (Shift + Enter for new line)"
+                rows="1"
+            ></textarea>
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const modelSelector = document.getElementById('model-selector');
+        let controller = null;
+
+        messageInput.addEventListener('input', function() {
+            this.style.height = '40px';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        function createMessageElement(isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            messageDiv.appendChild(contentDiv);
+            
+            return { messageDiv, contentDiv };
+        }
+        function processMarkdown(text) {
+            text = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, language, code) => {
+                const lang = language || 'plaintext';
+                const highlighted = hljs.highlight(code.trim(), { language: lang }).value;
+                return `<div class="code-container"><button class="copy-button">Copy</button><pre><code class="hljs language-${lang}">${highlighted}</code></pre></div>`;
+            });
+
+            text = text.replace(/<think>([\s\S]*?)<\/think>/g, '<div class="thinking-section">$1</div>');
+
+            text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+            text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+            text = text.replace(/^(\d+)\.\s+(.*$)/gm, '<li>$2</li>');
+            text = text.replace(/(<li>.*<\/li>)+/g, '<ol>$&</ol>');
+
+            text = text.replace(/\n/g, '<br>');
+
+            return text;
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            messageInput.value = '';
+            messageInput.style.height = '40px';
+            sendButton.disabled = true;
+            messageInput.disabled = true;
+
+            const { messageDiv: userMessageDiv, contentDiv: userContentDiv } = createMessageElement(true);
+            userContentDiv.textContent = message;
+            chatContainer.appendChild(userMessageDiv);
+
+            const { messageDiv: assistantMessageDiv, contentDiv: assistantContentDiv } = createMessageElement(false);
+            chatContainer.appendChild(assistantMessageDiv);
+            let responseText = '';
+
+            try {
+                if (controller) {
+                    controller.abort();
+                }
+                controller = new AbortController();
+
+                const response = await fetch('http://localhost:11434/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    model: modelSelector.value,
+                    prompt: message,
+                    stream: true
+                }),
+                signal: controller.signal
+            });
+
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.trim() === '') continue;
+                        
+                        try {
+                            const data = JSON.parse(line);
+                            if (data.response) {
+                                responseText += data.response;
+                                assistantContentDiv.innerHTML = processMarkdown(responseText);
+                                
+                                assistantContentDiv.querySelectorAll('.copy-button').forEach(button => {
+                                    if (!button.hasListener) {
+                                        button.addEventListener('click', () => {
+                                            const code = button.nextElementSibling.textContent;
+                                            navigator.clipboard.writeText(code);
+                                            button.textContent = 'Copied!';
+                                            setTimeout(() => button.textContent = 'Copy', 2000);
+                                        });
+                                        button.hasListener = true;
+                                    }
+                                });
+
+                                chatContainer.scrollTop = chatContainer.scrollHeight;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing JSON:', e);
+                        }
+                    }
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('Request aborted');
+                } else {
+                    assistantContentDiv.textContent = `Error: ${error.message}`;
+                }
+            }
+
+            sendButton.disabled = false;
+            messageInput.disabled = false;
+            messageInput.focus();
+            controller = null;
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        modelSelector.addEventListener('change', () => {
+            localStorage.setItem('selectedModel', modelSelector.value);
+        });
+
+        const savedModel = localStorage.getItem('selectedModel');
+        if (savedModel) {
+            modelSelector.value = savedModel;
+        }
+    </script>
+</body>
+</html>

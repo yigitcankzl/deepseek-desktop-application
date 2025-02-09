@@ -1,0 +1,18 @@
+directories:
+  output: dist
+  buildResources: build
+appId: com.deepseek.app
+productName: DeepSeek
+icon: assets/icon.png
+win:
+  target: nsis
+mac:
+  target: dmg
+linux:
+  target:
+    - AppImage
+    - deb
+  maintainer: Yigitcan Kizil <kizilyigit33@hotmail.com>
+  category: Utility
+files: []
+electronVersion: 34.1.1

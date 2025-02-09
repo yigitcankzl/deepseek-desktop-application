@@ -1,0 +1,410 @@
+:root {
+    --primary-color: #7c3aed;
+    --primary-hover: #6d28d9;
+    --bg-color: #0f172a;
+    --chat-bg: #1e293b;
+    --message-user-bg: #334155;
+    --message-assistant-bg: #1e293b;
+    --input-bg: #334155;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --border-color: #475569;
+}
+
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background-color: var(--chat-bg);
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+header h1 {
+    font-size: 1.25rem;
+}
+
+.model-selector {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+    outline: none;
+    font-size: 0.875rem;
+}
+
+#chat-container {
+    flex-grow: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.message {
+    max-width: 80%;
+    border-radius: 1rem;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.user-message {
+    background-color: var(--message-user-bg);
+    align-self: flex-end;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.assistant-message {
+    background-color: var(--message-assistant-bg);
+    align-self: flex-start;
+    border-bottom-left-radius: 0.25rem;
+    border: 1px solid var(--border-color);
+}
+
+.message-content {
+    color: var(--text-primary);
+}
+
+.thinking-section {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+    font-style: italic;
+}
+
+.code-container {
+    position: relative;
+    margin: 1rem 0;
+}
+
+pre {
+    background-color: #1a1a1a !important;
+    border-radius: 0.5rem;
+    margin: 0;
+}
+
+pre code {
+    padding: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.copy-button {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+    background-color: var(--primary-hover);
+}
+
+.code-container:hover .copy-button {
+    opacity: 1;
+}
+
+#input-container {
+    background-color: var(--chat-bg);
+    padding: 0.75rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.input-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-end;
+}
+
+#message-input {
+    flex-grow: 1;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    resize: none;
+    min-height: 40px;
+    max-height: 120px;
+    transition: all 0.2s ease;
+    line-height: 1.4;
+}
+
+#message-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
+}
+
+#send-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 40px;
+    white-space: nowrap;
+}
+
+#send-button:hover {
+    background-color: var(--primary-hover);
+}
+
+#send-button:disabled {
+    background-color: var(--border-color);
+    cursor: not-allowed;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--chat-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .message {
+        max-width: 90%;
+    }
+
+    #input-container {
+        padding: 0.5rem;
+    }
+
+    .input-wrapper {
+        gap: 0.375rem;
+    }
+
+    #message-input {
+        font-size: 1rem;
+        padding: 0.375rem 0.625rem;
+    }
+
+    #send-button {
+        padding: 0.375rem 0.75rem;
+    }
+}
+
+
+.math {
+    font-family: 'Computer Modern', serif;
+    background-color: rgba(124, 58, 237, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    margin: 0 0.25rem;
+    display: inline-block;
+}
+
+.math-block {
+    display: block;
+    text-align: center;
+    padding: 1rem;
+    margin: 1rem 0;
+    background-color: rgba(124, 58, 237, 0.05);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 0.5rem;
+}
+
+.message-content ol {
+    counter-reset: item;
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.message-content ol li {
+    counter-increment: item;
+    margin-bottom: 0.75rem;
+    padding-left: 2.5rem;
+    position: relative;
+}
+
+.message-content ol li:before {
+    content: counter(item) ".";
+    position: absolute;
+    left: 0;
+    width: 2rem;
+    text-align: right;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.message-content ol ol {
+    counter-reset: subitem;
+    margin-top: 0.75rem;
+}
+
+.message-content ol ol li {
+    counter-increment: subitem;
+}
+
+.message-content ol ol li:before {
+    content: counter(item) "." counter(subitem);
+}
+
+.message-content ol ol ol {
+    counter-reset: subsubitem;
+}
+
+.message-content ol ol ol li {
+    counter-increment: subsubitem;
+}
+
+.message-content ol ol ol li:before {
+    content: counter(item) "." counter(subitem) "." counter(subsubitem);
+}
+
+.equation-number {
+    float: right;
+    color: var(--text-secondary);
+    font-size: 0.9em;
+}
+
+.message-content li + li {
+    margin-top: 0.5rem;
+}
+
+.math-symbol {
+    font-family: 'Computer Modern Math', serif;
+    color: var(--primary-color);
+}
+
+.fraction {
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    margin: 0 0.25rem;
+}
+
+.fraction > span {
+    display: block;
+    padding: 0.1rem;
+}
+
+.fraction span.denominator {
+    border-top: 1px solid var(--text-primary);
+}
+
+.solution-steps {
+    margin: 1.5rem 0;
+    padding: 0;
+    list-style-type: none;
+    counter-reset: step;
+}
+
+.solution-step {
+    position: relative;
+    padding: 1rem 1rem 1rem 3rem;
+    margin: 0.5rem 0;
+    background-color: rgba(124, 58, 237, 0.05);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 0.5rem;
+}
+
+.solution-step::before {
+    counter-increment: step;
+    content: counter(step) ".";
+    position: absolute;
+    left: 1rem;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.solution-section {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.solution-substep {
+    margin: 0.5rem 0 0.5rem 1.5rem;
+    padding-left: 1rem;
+    border-left: 2px solid rgba(124, 58, 237, 0.3);
+}
+
+.math-display {
+    margin: 1rem 0;
+    padding: 0.5rem;
+    background-color: rgba(124, 58, 237, 0.1);
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.final-answer {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background-color: rgba(124, 58, 237, 0.15);
+    border: 2px solid var(--primary-color);
+    border-radius: 0.5rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.explanation {
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 0.5rem;
+}
+
+strong {
+    font-weight: bold;
+}
+
+em {
+    font-style: italic;
+}
+
+br {
+    display: block;
+    content: "";
+    margin-top: 10px;
+}
